@@ -2520,6 +2520,7 @@ pcap_create_common(char *ebuf, size_t total_size, size_t private_offset)
 	 */
 #ifdef __linux__
 	p->opt.protocol = 0;
+	p->opt.fanout = -1;
 #endif
 #ifdef _WIN32
 	p->opt.nocapture_local = 0;
