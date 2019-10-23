@@ -2268,8 +2268,8 @@ activate_pf_packet(pcap_t *handle, int is_any_device)
 	const char		*device = handle->opt.device;
 	int			status = 0;
 	int			sock_fd, arptype;
-#ifdef HAVE_PACKET_AUXDATA
-	int			val;
+#if defined(HAVE_PACKET_AUXDATA) || defined(PACKET_FANOUT)
+	int			val = 0;
 #endif
 	int			err = 0;
 	struct packet_mreq	mr;
@@ -2538,6 +2538,21 @@ activate_pf_packet(pcap_t *handle, int is_any_device)
 			return PCAP_ERROR;
 		}
 	}
+
+	/*
+	 * Add the packet socket into FANOUT group, if needed.
+	 */
+#ifdef PACKET_FANOUT
+	if (handle->opt.fanout > 0) {
+		val = handle->opt.fanout;
+		if (setsockopt(sock_fd, SOL_PACKET, PACKET_FANOUT,
+		               &val, sizeof(val)) < 0) {
+			pcap_fmt_errmsg_for_errno(handle->errbuf,
+			    PCAP_ERRBUF_SIZE, errno, "setsockopt (PACKET_FANOUT)");
+			return -1;
+		}
+	}
+#endif /* PACKET_FANOUT */
 
 	/* Enable auxiliary data if supported and reserve room for
 	 * reconstructing VLAN headers. */
@@ -5406,6 +5421,28 @@ pcap_set_protocol_linux(pcap_t *p, int protocol)
 		return (PCAP_ERROR_ACTIVATED);
 	p->opt.protocol = protocol;
 	return (0);
+}
+
+int
+pcap_set_fanout_linux(pcap_t *p, int8_t mode, uint16_t group_id)
+{
+#ifdef PACKET_FANOUT
+	if (pcap_check_activated(p)) {
+		return (PCAP_ERROR_ACTIVATED);
+	}
+
+	if (mode >= 0) {
+		p->opt.fanout = (((int)mode) << 16) | ((int)group_id & 0xffff);
+	} else {
+		p->opt.fanout = -1;
+	}
+
+	return 0;
+#else
+	pcap_fmt_errmsg_for_errno(p->errbuf, PCAP_ERRBUF_SIZE,
+	    errno, "funout is not supported");
+	return -1;
+#endif
 }
 
 /*
