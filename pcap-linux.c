@@ -5424,7 +5424,7 @@ pcap_set_protocol_linux(pcap_t *p, int protocol)
 }
 
 int
-pcap_set_fanout_linux(pcap_t *p, int8_t mode, uint16_t group_id)
+pcap_set_fanout_linux(pcap_t *p, uint16_t mode, uint16_t group_id)
 {
 #ifdef PACKET_FANOUT
 	if (pcap_check_activated(p)) {
