@@ -41,7 +41,7 @@ This function is only provided on Linux, and, if it is used on any device other
 than a network interface, it will have no effect.
 .LP
 .IR mode
-is the fanout mode to use. More information on the various modes can
+is the fanout mode and flags to use. More information on the various modes can
 be found in
 .BR packet (7)\c
 \&. If
