@@ -5440,7 +5440,7 @@ pcap_set_fanout_linux(pcap_t *p, uint16_t mode, uint16_t group_id)
 	return 0;
 #else
 	pcap_fmt_errmsg_for_errno(p->errbuf, PCAP_ERRBUF_SIZE,
-	    errno, "funout is not supported");
+	    errno, "fanout is not supported");
 	return -1;
 #endif
 }
