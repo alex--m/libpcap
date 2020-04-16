@@ -28,11 +28,11 @@ among processes
 #include <pcap/pcap.h>
 .LP
 .ft B
-int pcap_set_fanout_linux(pcap_t *p, int8_t mode, uint16_t group_id);
+int pcap_set_fanout_linux(pcap_t *p, int enable, uint16_t mode, uint16_t group_id);
 .ft
 .fi
 .SH DESCRIPTION
-On network intreface devices on Linux,
+On Linux network interface devices,
 .B pcap_set_fanout_linux()
 sets the fanout configuration to be used in the
 .BR socket (2)
@@ -40,13 +40,14 @@ call to create a capture socket when the handle is activated.
 This function is only provided on Linux, and, if it is used on any device other
 than a network interface, it will have no effect.
 .LP
+.IR enable
+is a boolean flag to control if fanout is enabled (default is FALSE).
+.LP
 .IR mode
 is the fanout mode and flags to use. More information on the various modes can
 be found in
 .BR packet (7)\c
-\&. If
-.IR mode
-is lower than 0, fanout will be disabled (this is the default).
+\&.
 .LP
 .IR group_id
 is a unique identifier of the socket group.
