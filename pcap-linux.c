@@ -2543,8 +2543,8 @@ activate_pf_packet(pcap_t *handle, int is_any_device)
 	 * Add the packet socket into FANOUT group, if needed.
 	 */
 #ifdef PACKET_FANOUT
-	if (handle->opt.fanout > 0) {
-		val = handle->opt.fanout;
+	if (handle->opt.fanout_enabled) {
+		val = handle->opt.fanout_opt;
 		if (setsockopt(sock_fd, SOL_PACKET, PACKET_FANOUT,
 		               &val, sizeof(val)) < 0) {
 			pcap_fmt_errmsg_for_errno(handle->errbuf,
@@ -5424,18 +5424,15 @@ pcap_set_protocol_linux(pcap_t *p, int protocol)
 }
 
 int
-pcap_set_fanout_linux(pcap_t *p, uint16_t mode, uint16_t group_id)
+pcap_set_fanout_linux(pcap_t *p, int enable, uint16_t mode, uint16_t group_id)
 {
 #ifdef PACKET_FANOUT
 	if (pcap_check_activated(p)) {
 		return (PCAP_ERROR_ACTIVATED);
 	}
 
-	if (mode >= 0) {
-		p->opt.fanout = (((int)mode) << 16) | ((int)group_id & 0xffff);
-	} else {
-		p->opt.fanout = -1;
-	}
+	p->opt.fanout_enabled = 1;
+	p->opt.fanout_opt = (((int)mode) << 16) | ((int)group_id & 0xffff);
 
 	return 0;
 #else

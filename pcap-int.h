@@ -154,7 +154,8 @@ struct pcap_opt {
 	 */
 #ifdef __linux__
 	int	protocol;	/* protocol to use when creating PF_PACKET socket */
-	int	fanout;		/* If >= 0 - fanout is enabled. 16 lower bits are the group id; upper bits are the mode. */
+	int	fanout_enabled;	/* If evaluates to TRUE, fanout mode is enabled; default: FALSE. */
+	int	fanout_opt;	/* 16 lower bits are the group id; upper bits are the mode. */
 #endif
 #ifdef _WIN32
 	int	nocapture_local;/* disable NPF loopback */
