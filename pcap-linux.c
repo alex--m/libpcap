@@ -5431,7 +5431,7 @@ pcap_set_fanout_linux(pcap_t *p, int enable, uint16_t mode, uint16_t group_id)
 		return (PCAP_ERROR_ACTIVATED);
 	}
 
-	p->opt.fanout_enabled = 1;
+	p->opt.fanout_enabled = enable;
 	p->opt.fanout_opt = (((int)mode) << 16) | ((int)group_id & 0xffff);
 
 	return 0;
