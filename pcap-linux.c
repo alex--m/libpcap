@@ -211,6 +211,7 @@ static void map_arphrd_to_dlt(pcap_t *, int, const char *, int);
 static int pcap_activate_linux(pcap_t *);
 static int activate_pf_packet(pcap_t *, int);
 static int setup_mmapped(pcap_t *, int *);
+static int activate_fanout(pcap_t *);
 static int pcap_can_set_rfmon_linux(pcap_t *);
 static int pcap_inject_linux(pcap_t *, const void *, int);
 static int pcap_stats_linux(pcap_t *, struct pcap_stat *);
@@ -1062,6 +1063,16 @@ pcap_activate_linux(pcap_t *handle)
 		status = status2;
 		goto fail;
 	}
+
+	/*
+	 * Only after we have the socket properly binded and set with the
+	 * correct protocol we can set the FANOUT mode.
+	 */
+	if ((status2 = activate_fanout(handle)) != 0) {
+		status = status2;
+		goto fail;
+	}
+
 
 	handle->inject_op = pcap_inject_linux;
 	handle->setfilter_op = pcap_setfilter_linux;
@@ -2268,7 +2279,7 @@ activate_pf_packet(pcap_t *handle, int is_any_device)
 	const char		*device = handle->opt.device;
 	int			status = 0;
 	int			sock_fd, arptype;
-#if defined(HAVE_PACKET_AUXDATA) || defined(PACKET_FANOUT)
+#if defined(HAVE_PACKET_AUXDATA)
 	int			val = 0;
 #endif
 	int			err = 0;
@@ -2539,21 +2550,6 @@ activate_pf_packet(pcap_t *handle, int is_any_device)
 		}
 	}
 
-	/*
-	 * Add the packet socket into FANOUT group, if needed.
-	 */
-#ifdef PACKET_FANOUT
-	if (handle->opt.fanout_enabled) {
-		val = handle->opt.fanout_opt;
-		if (setsockopt(sock_fd, SOL_PACKET, PACKET_FANOUT,
-		               &val, sizeof(val)) < 0) {
-			pcap_fmt_errmsg_for_errno(handle->errbuf,
-			    PCAP_ERRBUF_SIZE, errno, "setsockopt (PACKET_FANOUT)");
-			return -1;
-		}
-	}
-#endif /* PACKET_FANOUT */
-
 	/* Enable auxiliary data if supported and reserve room for
 	 * reconstructing VLAN headers. */
 #ifdef HAVE_PACKET_AUXDATA
@@ -2645,6 +2641,30 @@ activate_pf_packet(pcap_t *handle, int is_any_device)
 
 	return status;
 }
+
+/*
+ * Add the packet socket into FANOUT group, if needed.
+ *
+ * On success (or if nothing was done), returns 0.
+ *
+ * On error, returns -1 and sets handle->errbuf to the appropriate message.
+ */
+static int
+activate_fanout(pcap_t *handle) {
+	int rc = 0;
+#ifdef PACKET_FANOUT
+	int val = handle->opt.fanout_opt;
+
+	if (handle->opt.fanout_enabled &&
+	    setsockopt(handle->fd, SOL_PACKET, PACKET_FANOUT, &val, sizeof(val)) < 0) {
+		pcap_fmt_errmsg_for_errno(handle->errbuf, PCAP_ERRBUF_SIZE, errno, "setsockopt (PACKET_FANOUT)");
+		rc = -1;
+	}
+#endif /* PACKET_FANOUT */
+
+	return rc;
+}
+
 
 /*
  * Attempt to setup memory-mapped access.
