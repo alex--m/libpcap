@@ -513,7 +513,7 @@ PCAP_API int	pcap_set_fanout_linux(pcap_t *, int, uint16_t, uint16_t);
 #define PCAP_TSTAMP_PRECISION_NANO	1	/* use timestamps with nanosecond precision */
 
 PCAP_AVAILABLE_0_4
-PCAP_API pcap_t	*pcap_open_live(const char *, int, int, int, char *);
+PCAP_API pcap_t	*pcap_open_live(const char *, int, int, int, char *, int, uint16_t, uint16_t);
 
 PCAP_AVAILABLE_0_6
 PCAP_API pcap_t	*pcap_open_dead(int, int);

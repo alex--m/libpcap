@@ -2761,7 +2761,7 @@ pcap_activate(pcap_t *p)
 }
 
 pcap_t *
-pcap_open_live(const char *device, int snaplen, int promisc, int to_ms, char *errbuf)
+pcap_open_live(const char *device, int snaplen, int promisc, int to_ms, char *errbuf, int fanout, uint16_t mode, uint16_t group_id)
 {
 	pcap_t *p;
 	int status;
@@ -2833,6 +2833,9 @@ pcap_open_live(const char *device, int snaplen, int promisc, int to_ms, char *er
 	if (status < 0)
 		goto fail;
 	status = pcap_set_timeout(p, to_ms);
+	if (status < 0)
+		goto fail;
+	status = pcap_set_fanout_linux(p, fanout, mode, group_id);
 	if (status < 0)
 		goto fail;
 	/*
